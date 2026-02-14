@@ -9,13 +9,13 @@ canvas.height = window.innerHeight;
 /* ============================= */
 
 const bgImage = new Image();
-bgImage.src = "images/komar.jpg";
+bgImage.src = "komar.jpg";
 
 /* ============================= */
 /*          МУЗЫКА               */
 /* ============================= */
 
-const music = new Audio("sounds/gufmusic.mp3");
+const music = new Audio("gufmusic.mp3");
 music.loop = true;
 music.volume = 0.5;
 
@@ -289,3 +289,4 @@ bgImage.onload = () => {
 /* ============================= */
 
 const username = `anon_${Math.floor(Math.random() * 10000)}`;
+
