@@ -1,0 +1,14 @@
+{
+  "leaderboard": [
+    {
+      "userId": 123456789,
+      "username": "anon_1",
+      "score": 15
+    },
+    {
+      "userId": 987654321,
+      "username": "anon_2",
+      "score": 12
+    }
+  ]
+}

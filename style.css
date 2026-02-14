@@ -1,0 +1,10 @@
+/* Робимо канвас на весь екран без прокрутки */
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black; /* на випадок, якщо фон не завантажився */
+}
+
+canvas {
+    display: block;
+}
