@@ -29,21 +29,16 @@ function startMusic() {
 /* ============================= */
 let bird = {
     x: 40,
-    y: canvas.height / 1,
-    size: 20,
+    y: canvas.height / 2,
+    size: 16,  // уменьшена для мобильной версии
     velocity: 0
 };
 
 let gravity, jumpPower;
-
-/* ============================= */
-/*          ТРУБЫ                */
-/* ============================= */
-let pipes = [];
+let pipeSpeed = 3.5;
 let pipeGap;
 let pipeSpawnInterval;
 let pipeTimer;
-let pipeSpeed = 4;
 
 /* ============================= */
 /*          ИГРА                 */
@@ -51,17 +46,21 @@ let pipeSpeed = 4;
 let score = 0;
 let coinsCollected = 0;
 let gameActive = false;
+let pipes = [];
+let coins = [];
 
 /* ============================= */
 /*    АДАПТАЦИЯ ПОД МОБИЛКУ     */
 /* ============================= */
 function updateGameParameters() {
     const scale = canvas.height / 800;
-    gravity = 0.35 * scale;
-    jumpPower = -8.5 * scale;
-    pipeGap = 250 * scale;
+
+    gravity = 0.28 * scale;
+    jumpPower = -7.5 * scale;
+    pipeGap = 200 * scale;
     pipeSpawnInterval = 1500;
 }
+
 updateGameParameters();
 
 /* ============================= */
@@ -84,13 +83,12 @@ function spawnPipe() {
 /* ============================= */
 /*          МОНЕТКИ              */
 /* ============================= */
-let coins = [];
 function spawnCoin(pipe) {
-    const coinY = pipe.top + Math.random() * (pipe.bottom - pipe.top - 30);
+    const coinY = pipe.top + Math.random() * (pipe.bottom - pipe.top - 20);
     coins.push({
         x: pipe.x + 35,
         y: coinY,
-        size: 20,
+        size: 12, // маленькая монетка для мобильного
         collected: false
     });
 }
@@ -122,6 +120,7 @@ function update() {
     pipes.forEach(pipe => {
         pipe.x -= pipeSpeed;
 
+        // коллизия с трубами
         if (bird.x < pipe.x + 70 && bird.x + bird.size > pipe.x &&
             (bird.y < pipe.top || bird.y + bird.size > pipe.bottom)) {
             endGame();
@@ -131,9 +130,7 @@ function update() {
         if (!pipe.passed && bird.x > pipe.x + 70) {
             pipe.passed = true;
             score++;
-
-            // монетки сразу с первой трубы
-            coinsCollected += 1;
+            coinsCollected++; // монетки сразу с первой трубы
 
             // отправляем в Telegram
             if (window.Telegram && Telegram.WebApp) {
@@ -158,6 +155,7 @@ function update() {
         }
     });
 
+    // удаление старых труб и монет
     pipes = pipes.filter(p => p.x > -100);
     coins = coins.filter(c => c.x > -50 && !c.collected);
 }
@@ -202,22 +200,22 @@ function draw() {
 
     // счёт
     ctx.fillStyle = "white";
-    ctx.font = "40px Arial";
-    ctx.fillText("Score: "+score, 30,60);
-    ctx.fillText("Coins: "+coinsCollected, 30,110);
+    ctx.font = "30px Arial";
+    ctx.fillText("Score: "+score, 20,50);
+    ctx.fillText("Coins: "+coinsCollected, 20,90);
 
     // старт / Game Over
     if (!gameActive && score === 0) {
-        ctx.font = "40px Arial";
-        ctx.fillText("Tap to Start", canvas.width/2 - 110, canvas.height/2);
+        ctx.font = "30px Arial";
+        ctx.fillText("Tap to Start", canvas.width/2 - 90, canvas.height/2);
     }
     if (!gameActive && score > 0) {
         ctx.fillStyle = "red";
-        ctx.font = "50px Arial";
-        ctx.fillText("GAME OVER", canvas.width/2 - 150, canvas.height/2);
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER", canvas.width/2 - 120, canvas.height/2);
         ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-        ctx.fillText("Tap to restart", canvas.width/2 - 100, canvas.height/2 + 40);
+        ctx.font = "25px Arial";
+        ctx.fillText("Tap to restart", canvas.width/2 - 90, canvas.height/2 + 35);
     }
 }
 
@@ -274,4 +272,3 @@ window.addEventListener("resize", ()=>{
 /*            СТАРТ              */
 /* ============================= */
 bgImage.onload = () => { gameLoop(); };
-
