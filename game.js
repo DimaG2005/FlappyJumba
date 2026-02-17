@@ -290,3 +290,158 @@ bgImage.onload = () => {
 
 const username = `anon_${Math.floor(Math.random() * 10000)}`;
 
+/* ============================= */
+/*           МОНЕТКИ             */
+/* ============================= */
+
+let coins = [];  // массив монеток
+let coinsCollected = 0; // сколько собрано монеток
+
+function spawnCoin(pipe) {
+    // монетка между трубами
+    const coinY = pipe.top + Math.random() * (pipe.bottom - pipe.top - 30);
+    coins.push({
+        x: pipe.x + 35,  // центр трубы
+        y: coinY,
+        size: 20,
+        collected: false
+    });
+}
+
+/* ============================= */
+/*          ОБНОВЛЕНИЕ           */
+/* ============================= */
+
+function update() {
+    if (!gameActive) return;
+
+    bird.velocity += gravity;
+    bird.y += bird.velocity;
+
+    if (bird.y < 0 || bird.y + bird.size > canvas.height) {
+        endGame();
+    }
+
+    pipes.forEach(pipe => {
+        pipe.x -= pipeSpeed;
+
+        // коллизия с трубами
+        if (
+            bird.x < pipe.x + 70 &&
+            bird.x + bird.size > pipe.x &&
+            (bird.y < pipe.top || bird.y + bird.size > pipe.bottom)
+        ) {
+            endGame();
+        }
+
+        // подсчет очков
+        if (!pipe.passed && bird.x > pipe.x + 70) {
+            pipe.passed = true;
+            score++;
+        }
+
+        // создаем монетку сразу с первой трубы
+        if (!pipe.coinSpawned) {
+            spawnCoin(pipe);
+            pipe.coinSpawned = true;
+        }
+    });
+
+    // обновление монеток
+    coins.forEach(coin => {
+        coin.x -= pipeSpeed;
+
+        // проверка сборки монетки
+        if (!coin.collected &&
+            bird.x < coin.x + coin.size &&
+            bird.x + bird.size > coin.x &&
+            bird.y < coin.y + coin.size &&
+            bird.y + bird.size > coin.y
+        ) {
+            coin.collected = true;
+            coinsCollected++;
+        }
+    });
+
+    // удаляем старые трубы и монетки
+    pipes = pipes.filter(p => p.x > -100);
+    coins = coins.filter(c => c.x > -50 && !c.collected);
+}
+
+/* ============================= */
+/*           ОТРИСОВКА          */
+/* ============================= */
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+
+    // птица
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(bird.x, bird.y, bird.size, bird.size);
+
+    // трубы
+    ctx.fillStyle = "green";
+    pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, 70, pipe.top);
+        ctx.fillRect(pipe.x, pipe.bottom, 70, canvas.height - pipe.bottom);
+    });
+
+    // монетки
+    ctx.fillStyle = "gold";
+    coins.forEach(coin => {
+        ctx.beginPath();
+        ctx.arc(coin.x + coin.size/2, coin.y + coin.size/2, coin.size/2, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    // счет
+    ctx.fillStyle = "white";
+    ctx.font = "40px Arial";
+    ctx.fillText("Score: " + score, 30, 60);
+    ctx.fillText("Coins: " + coinsCollected, 30, 110);
+
+    // экран старта / Game Over
+    if (!gameActive && score === 0) {
+        ctx.font = "40px Arial";
+        ctx.fillText("Tap to Start", canvas.width / 2 - 110, canvas.height / 2);
+    }
+    if (!gameActive && score > 0) {
+        ctx.fillStyle = "red";
+        ctx.font = "50px Arial";
+        ctx.fillText("GAME OVER", canvas.width / 2 - 150, canvas.height / 2);
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.fillText("Tap to restart", canvas.width / 2 - 100, canvas.height / 2 + 40);
+    }
+}
+
+/* ============================= */
+/*           RESTART             */
+/* ============================= */
+
+function restart() {
+    bird.y = canvas.height / 2;
+    bird.velocity = 0;
+    pipes = [];
+    coins = [];
+    coinsCollected = 0;
+    score = 0;
+    gameActive = true;
+
+    clearInterval(pipeTimer);
+    pipeTimer = setInterval(spawnPipe, pipeSpawnInterval);
+}
+
+/* ============================= */
+/*      ОТПРАВКА В БОТ          */
+/* ============================= */
+
+function sendScoreToBot(score) {
+    if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.sendData(
+            JSON.stringify({ score: score, coins: coinsCollected, game: "flappy" })
+        );
+    }
+}
+
