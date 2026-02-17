@@ -28,9 +28,9 @@ function startMusic() {
 /*          ПТИЦА                */
 /* ============================= */
 let bird = {
-    x: 80,
-    y: canvas.height / 2,
-    size: 40,
+    x: 40,
+    y: canvas.height / 1,
+    size: 20,
     velocity: 0
 };
 
@@ -274,3 +274,4 @@ window.addEventListener("resize", ()=>{
 /*            СТАРТ              */
 /* ============================= */
 bgImage.onload = () => { gameLoop(); };
+
